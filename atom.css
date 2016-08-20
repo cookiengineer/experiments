@@ -1,0 +1,146 @@
+html,
+body {
+	height: 100%;
+}
+
+body {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: #444444;
+}
+
+.atom {
+	width: 250px;
+	height: 250px;
+	position: relative;
+	border-radius: 50%;
+	padding: 30px;
+}
+
+.atom-nucleus,
+.atom-nucleus:before {
+	position: absolute;
+	background: -webkit-linear-gradient(270deg, #0adef3 0%, #45beff 100%);
+	background: linear-gradient(-180deg, #0adef3 0%, #45beff 100%);
+}
+
+.atom-nucleus {
+	display: block;
+	content: '';
+	width: 20px;
+	height: 20px;
+	margin-left: -10px;
+	margin-top: -10px;
+	border-radius: 50%;
+	top: 155px;
+	left: 155px;
+}
+
+.atom-nucleus:before {
+	display: block;
+	content: '';
+	width: 36px;
+	height: 36px;
+	margin-left: -18px;
+	margin-top: -18px;
+	border-radius: 50%;
+	top: 10px;
+	left: 10px;
+	opacity: 0.15;
+}
+
+.atom-orbits > div {
+	display: block;
+	content: '';
+	position: absolute;
+	width: 250px;
+	height: 250px;
+	border: 4px solid #ffffff;
+	transform-style: preserve-3d;
+	border-radius: 50%;
+}
+
+
+
+@keyframes rotatefirst {
+  0%   { opacity: 1.0; transform: rotateZ(0deg) rotateY(73deg) rotate(   0deg); }
+  50%  { opacity: 0.1; }
+  100% { opacity: 1.0; transform: rotateZ(0deg) rotateY(73deg) rotate(-360deg); }
+}
+
+@keyframes rotatesecond {
+  0%   { opacity: 1.0; transform: rotateZ(-60deg) rotateY(73deg) rotate(   0deg); }
+  50%  { opacity: 0.1; }
+  100% { opacity: 1.0; transform: rotateZ(-60deg) rotateY(73deg) rotate(-360deg); }
+}
+
+@keyframes rotatethird {
+  0%   { opacity: 1.0; transform: rotateZ(60deg) rotateY(73deg) rotate(   0deg); }
+  50%  { opacity: 0.1; }
+  100% { opacity: 1.0; transform: rotateZ(60deg) rotateY(73deg) rotate(-360deg); }
+}
+
+.atom-orbits > div:nth-child(1) {
+	transform: rotateZ(0deg) rotateY(73deg);
+	animation: 3s rotatefirst infinite linear;
+}
+
+.atom-orbits > div:nth-child(2) {
+	transform: rotateZ(-60deg) rotateY(73deg);
+	animation: 2s rotatesecond infinite linear;
+}
+
+.atom-orbits > div:nth-child(3) {
+	transform: rotateZ(60deg) rotateY(73deg);
+	animation: 4s rotatethird infinite linear;
+}
+
+.atom-orbits > div:before,
+.atom-orbits > div:after {
+	display: block;
+	position: absolute;
+	content: '';
+	transform-style: preserve-3d;
+	background: -webkit-linear-gradient(270deg, #0adef3 0%, #45beff 100%);
+	background: linear-gradient(-180deg, #fad161 0%, #f99337 100%);
+
+}
+
+.atom-orbits > div:before {
+	width: 20px;
+	height: 20px;
+	margin-left: -10px;
+	margin-right: -10px;
+	border-radius: 50%;
+	top: -10px;
+	left: 50%;
+}
+
+.atom-orbits > div:after {
+	width: 40px;
+	height: 40px;
+	margin-left: -20px;
+	margin-right: -20px;
+	border-radius: 50%;
+	top: -20px;
+	left: 50%;
+	opacity: 0.15;
+}
+
+
+.atom-orbits > div:nth-child(1):before,
+.atom-orbits > div:nth-child(1):after {
+	transform: rotateY(-73deg) rotateZ(0deg);
+}
+
+.atom-orbits > div:nth-child(2):before,
+.atom-orbits > div:nth-child(2):after {
+	transform: rotateY(-73deg) rotateZ(60deg);
+}
+
+.atom-orbits > div:nth-child(3):before,
+.atom-orbits > div:nth-child(3):after {
+	transform: rotateY(-73deg) rotateZ(-60deg);
+}
+

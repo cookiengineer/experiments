@@ -1,0 +1,65 @@
+{
+	"api": {
+		"files": {}
+	},
+	"build": {
+		"environments": {
+			"html/main": {
+				"build": "tool.Main",
+				"debug": false,
+				"packages": [
+					[
+						"tool",
+						"./lychee.pkg"
+					]
+				],
+				"sandbox": false,
+				"tags": {
+					"platform": [
+						"html"
+					]
+				},
+				"variant": "application"
+			},
+			"html-nwjs/main": {
+				"build": "tool.Main",
+				"debug": false,
+				"packages": [
+					[
+						"tool",
+						"./lychee.pkg"
+					]
+				],
+				"sandbox": false,
+				"tags": {
+					"platform": [
+						"html-nwjs",
+						"html"
+					]
+				},
+				"variant": "application"
+			}
+		},
+		"files": {}
+	},
+	"source": {
+		"environments": {},
+		"files": {
+			"Main": [
+				"js"
+			],
+			"Main__OLD": [
+				"js"
+			],
+			"state": {
+				"Project": [
+					"js"
+				],
+				"Scene": [
+					"js"
+				]
+			}
+		},
+		"tags": {}
+	}
+}

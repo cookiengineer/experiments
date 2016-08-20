@@ -1,0 +1,1215 @@
+
+<html>
+<head>
+    <title>Q-Learning Adventure</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+    </style>
+    <script src="pixi.js"></script>
+</head>
+<body>
+    <script>
+
+    var displayModal = false;
+    var regularLearning = true;
+    var delayedLearning = false;
+    var doubleLearning = false;
+    var speedyLearning = false;
+ 
+    // create an new instance of a pixi stage
+    var stage = new PIXI.Stage(0xffffff, true);
+
+    // create scrolling background images
+    var spaceTexture = PIXI.Texture.fromImage("space.jpg");
+    var spaceBackground = new PIXI.Sprite(spaceTexture);
+    stage.addChild(spaceBackground);
+
+    // le background 1
+    var texture = PIXI.Texture.fromImage("gradient1.jpg");
+    var background = new PIXI.Sprite(texture);
+    background.alpha = .5;
+    stage.addChild(background);
+    // le background 2
+    var background2 = new PIXI.Sprite(texture);
+    background2.position.x = 720;
+    background2.alpha = .5;
+    stage.addChild(background2);
+
+    // draw le goal node
+    var starTexture = PIXI.Texture.fromImage("earth2.png");
+    var goal = new PIXI.Sprite(starTexture);
+    constructGoal();
+
+    // draw le enemies
+    var asteroidTexture = PIXI.Texture.fromImage("asteroid1.png");
+    var enemy1 = new PIXI.Sprite(asteroidTexture);
+    var enemy2 = new PIXI.Sprite(asteroidTexture);
+    constructEnemies();
+
+    // le black background
+    var blackTexture = PIXI.Texture.fromImage("black.png");
+    var blackBackground = new PIXI.Sprite(blackTexture);
+    blackBackground.alpha = 0;
+    stage.addChild(blackBackground);
+
+    // le text area background
+    var textBackground = new PIXI.Sprite(blackTexture);
+    textBackground.alpha = 1;
+    textBackground.position.x = 420;
+    stage.addChild(textBackground);
+
+    // le bottom black background
+    var bottomBackground = new PIXI.Sprite(blackTexture);
+    bottomBackground.position.y = 240;
+    stage.addChild(bottomBackground);
+
+    // le title text
+    var text = new PIXI.Text("Q-Learning Adventure", {font:"17px Arial", fill:"white"});
+    text.x = 470;
+    text.y = 20;
+    stage.addChild(text);
+
+    // description text 1
+    var descripText1 = new PIXI.Text("Spaceship learns to reach", {font:"15px Arial", fill:"white"});
+    descripText1.x = 470;
+    descripText1.y = 70;
+    stage.addChild(descripText1);
+
+    // descripton image 1
+    var descripPlanet = new PIXI.Sprite(starTexture);
+    descripPlanet.position.x = 650;
+    descripPlanet.position.y = 50;
+    stage.addChild(descripPlanet);
+
+    // description text 2
+    var descripText2 = new PIXI.Text("while avoiding", {font:"15px Arial", fill:"white"});
+    descripText2.x = 470;
+    descripText2.y = 110;
+    stage.addChild(descripText2);
+
+    // description image 2
+    var descripAsteroid = new PIXI.Sprite(asteroidTexture);
+    descripAsteroid.position.x = 565;
+    descripAsteroid.position.y = 90;
+    stage.addChild(descripAsteroid);
+
+    // le iteration counter
+    var iterationText = new PIXI.Text("Iteration:", {font:"15px Arial", fill:"white"});
+    iterationText.x = 12;
+    iterationText.y = 251;
+    stage.addChild(iterationText);
+
+    var iterationCount = 0;
+    var iterationCounterText = new PIXI.Text("0", {font:"18px Arial", fill:"white"});
+    iterationCounterText.x = 82;
+    iterationCounterText.y = 250;
+    stage.addChild(iterationCounterText);
+
+    // le total reward
+    var totalRewardText = new PIXI.Text("Reward: ", {font:"15px Arial", fill:"white"});
+    totalRewardText.x = 200;
+    totalRewardText.y = 251;
+    stage.addChild(totalRewardText);
+
+    var totalRewardCount = 0;
+    var totalRewardCountText = new PIXI.Text("0", {font:"18px Arial", fill:"white"});
+    totalRewardCountText.x = 270;
+    totalRewardCountText.y = 250;
+    stage.addChild(totalRewardCountText);
+
+    // le choose your algorithm
+    var chooseText = new PIXI.Text("Choose your algorithm:", {font:"14px Arial", fill:"white"});
+    chooseText.x = 470;
+    chooseText.y = 150;
+    stage.addChild(chooseText);
+
+    // add regular learning button
+    var dashboardButton = new PIXI.Graphics();
+    var dashboardButtonOverlay = new PIXI.Graphics();
+    var detailsText = new PIXI.Text("Regular", {font:"17px Arial", fill:"white"});
+    createRegularButton();
+
+    detailsText.tint = 0xffff00;
+
+    // add delayed learning button
+    var delayedButton = new PIXI.Graphics();
+    var delayedButtonOverlay = new PIXI.Graphics();
+    var delayedText = new PIXI.Text("Delayed", {font:"17px Arial", fill:"white"});
+    createDelayedButton();
+
+    // add double learning button
+    var doubleButton = new PIXI.Graphics();
+    var doubleButtonOverlay = new PIXI.Graphics();
+    var doubleText = new PIXI.Text("Double", {font:"17px Arial", fill:"white"});
+    createDoubleButton();
+
+    // add speedy learning button
+    var speedyButton = new PIXI.Graphics();
+    var speedyButtonOverlay = new PIXI.Graphics();
+    var speedyText = new PIXI.Text("Speedy", {font:"17px Arial", fill:"white"});
+    createSpeedyButton();
+
+    // add view q-table button
+    var viewQTableButton = new PIXI.Graphics();
+    var viewQTableButtonOverlay = new PIXI.Graphics();
+    var viewQButtonText = new PIXI.Text("Toggle Q-Table", {font:"17px Arial", fill:"white"});
+    createQTableButton();
+    
+
+    dashboardButtonOverlay.click = function(mouseData){
+       console.log("CLICK!");
+       //displayModal = true;
+       goalReached = true;
+       regularLearning = true;
+       delayedLearning = false;
+       doubleLearning = false;
+       speedyLearning = false;
+
+        qtable = new Array(28);
+        for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+            qtable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+
+        // reset iteration count
+        iterationCount = 0;
+        iterationCounterText.setText(iterationCount);
+
+        // reset reward count
+        totalRewardCount = 0;
+        totalRewardCountText.setText(totalRewardCount);
+
+        // tint color
+        detailsText.tint = 0xffff00;
+        delayedText.tint = 0xffffff;
+        doubleText.tint = 0xffffff;
+        speedyText.tint = 0xffffff;
+
+        createQTableDisplay();
+    }
+
+    delayedButtonOverlay.click = function(mouseData){
+       console.log("CLICK!");
+       //displayModal = true;
+       goalReached = true;
+       delayedLearning = true;
+       regularLearning = false;
+       doubleLearning = false;
+       speedyLearning = false;
+
+        qtable = new Array(28);
+        for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+            qtable[qxIterator] = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+        }
+
+        // reset iteration count
+        iterationCount = 0;
+        iterationCounterText.setText(iterationCount);
+
+        // reset reward count
+        totalRewardCount = 0;
+        totalRewardCountText.setText(totalRewardCount);
+
+        // tint color
+        detailsText.tint = 0xffffff;
+        delayedText.tint = 0xffff00;
+        doubleText.tint = 0xffffff;
+        speedyText.tint = 0xffffff;
+
+        createQTableDisplay();
+    }
+
+    doubleButtonOverlay.click = function(mouseData){
+       console.log("CLICK!");
+       //displayModal = true;
+       goalReached = true;
+       doubleLearning = true;
+       delayedLearning = false;
+       regularLearning = false;
+       speedyLearning = false;
+
+        qtable = new Array(28);
+        for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+            qtable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+
+        doubleBTable = new Array(28);
+        for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+            doubleBTable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+
+        // reset iteration count
+        iterationCount = 0;
+        iterationCounterText.setText(iterationCount);
+
+        // reset reward count
+        totalRewardCount = 0;
+        totalRewardCountText.setText(totalRewardCount);
+
+        // tint color
+        detailsText.tint = 0xffffff;
+        delayedText.tint = 0xffffff;
+        doubleText.tint = 0xffff00;
+        speedyText.tint = 0xffffff;
+
+        createQTableDisplay();
+    }
+
+    // 
+    // speedy q-learning specific data sets
+    //
+    var speedyCount = 0;
+    var prevPrevRow = 0;
+    var prevPrevMaxQResult = 0;
+    //
+    // end speedy q-learning specific data sets
+    //
+
+    speedyButtonOverlay.click = function(mouseData){
+       // disable for now
+       console.log("CLICK!");
+       //displayModal = true;
+       goalReached = true;
+       speedyLearning = true;
+       doubleLearning = false;
+       delayedLearning = false;
+       regularLearning = false;
+
+        qtable = new Array(28);
+        for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+            qtable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+
+        speedyCount = 0;
+        prevPrevRow = 0;
+        prevPrevMaxQResult = 0;
+
+        // reset iteration count
+        iterationCount = 0;
+        iterationCounterText.setText(iterationCount);
+
+        // reset reward count
+        totalRewardCount = 0;
+        totalRewardCountText.setText(totalRewardCount);
+
+        // tint color
+        detailsText.tint = 0xffffff;
+        delayedText.tint = 0xffffff;
+        doubleText.tint = 0xffffff;
+        speedyText.tint = 0xffff00;
+
+        createQTableDisplay();
+    }
+
+    var qTabTrack = 0;
+
+    viewQTableButtonOverlay.click = function(mouseData){
+        if (qTabTrack == 0){
+            detailsModalBackground.alpha = 1;
+            viewQButtonText.tint = 0xffff00;
+            qTabTrack = 1;
+        } else {
+            detailsModalBackground.alpha = 0;
+            viewQButtonText.tint = 0xffffff;
+            qTabTrack = 0;
+        }
+    }
+
+    var trackBackgroundPos = 0;
+    var backBool = false;
+ 
+    // create a renderer instance.
+    var renderer = PIXI.autoDetectRenderer(1700, 800);
+ 
+    // add the renderer view element to the DOM
+    document.body.appendChild(renderer.view);
+ 
+    requestAnimFrame( animate );
+
+    // draw le grid
+    drawHorizontalLines();
+    drawVerticalLines();
+
+    // draw le hero
+    var updatedX = 0;
+    var updatedY = 0;
+    var snapshotXPos = 0;
+    var snapshotYPos = 0;
+    var origXLoc = 0;
+    var origYLoc = 0;
+
+    var xMovementCheck = 0;
+    var yMovementCheck = 0;
+
+    var maxQResult = 0;
+
+    var previousRow = 0;
+    var previousMaxQResult = 0;
+
+    var movementResult = 0;
+
+    var firstPass = true;
+    var goalReached = false;
+    var backFlushTrans = false;
+    var chooseBackground = false;
+
+    // q value rates
+    var learningRate = 0.8;
+    var explorationRate = 0.1;
+
+    var texture1 = PIXI.Texture.fromImage("ship2.png");
+    var hero = new PIXI.Sprite(texture1);
+    constructHero();
+
+    // create Q table, 2d array
+    var qtable = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        qtable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // draw initial q table in text 
+    var qtableText = new Array(28);
+    for (var i = 0; i < qtableText.length; i++){
+        qtableText[i] = new Array(28);
+    }
+
+    var labels = ["1a", "1b", "1c", "1d", "1e", "1f", "1g", "2a", "2b", "2c", "2d", "2e", "2f", "2g", "3a", "3b", "3c", "3d", "3e", "3f", "3g",
+                  "4a", "4b", "4c", "4d", "4e", "4f", "4g"];
+
+
+    // le details modal black background
+    var detailsModalBackground = new PIXI.Sprite(blackTexture);
+    //detailsModalBackground.alpha = 0;
+    //detailsModalBackground.position.x = 420;
+    //stage.addChild(detailsModalBackground);
+
+    createQTableDisplay();
+
+
+    //
+    // Delayed Q-Learning specific data sets
+    //
+    // delayed q-learning attempted updates
+    //
+    var delayedAttemptedUpdates = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        delayedAttemptedUpdates[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // counter values for each step
+    //
+    var delayedCounters = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        delayedCounters[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // time of last attempted update
+    //
+    var delayedTimes = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        delayedTimes[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // learn flags
+    //
+    var delayedLearnFlags = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        delayedLearnFlags[qxIterator] = [true, true, true, true, true, true, true, true, true, true, true, true, true,
+                                         true, true, true, true, true, true, true, true, true, true, true, true, true, 
+                                         true, true];
+    }
+
+    delayedMostRecentTime = 0;
+    delayedSampleAmount = 2;
+    delayedEpsilon = .05;
+    //
+    // End of delayed Q-Learning specific data sets
+    //
+
+
+    //
+    // double q-learning specific data sets
+    //
+    var doubleBTable = new Array(28);
+    for (var qxIterator = 0; qxIterator < 28; qxIterator++){
+        doubleBTable[qxIterator] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+    //
+    // End of double q-learning specific data sets
+    //
+
+
+    // create R table, 2d array
+    // set rewards matrix manually
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+    var rewards = [[  -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1a
+                   [   0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1b
+                   [  -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1c
+                   [  -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,-500, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1d
+                   [  -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1e
+                   [  -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1f
+                   [  -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1g
+                   [   0, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2a
+                   [  -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2b
+                   [  -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,-500, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2c
+                   [  -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2d
+                   [  -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-500, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2e
+                   [  -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1], // 2f
+                   [  -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1], // 2g
+                   [  -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1], // 3a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1], // 3b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,-500, -1, -1, -1, -1], // 3c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-500, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1], // 3d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1], // 3e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1,  0, -1], // 3f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1,  100], // 3g
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1], // 4a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,-500, -1, -1, -1, -1], // 4b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1], // 4c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-500, -1,  0, -1, -1], // 4d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  0, -1], // 4e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0, -1,  100], // 4f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,  0,  100]]; // 4g
+
+    
+    // movement index
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+    var xMov =     [[ -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1a
+                   [ -60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1b
+                   [  -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1c
+                   [  -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1d
+                   [  -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1e
+                   [  -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1f
+                   [  -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1g
+                   [   0, -1, -1, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2a
+                   [  -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2b
+                   [  -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2c
+                   [  -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2d
+                   [  -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2e
+                   [  -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1], // 2f
+                   [  -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1], // 2g
+                   [  -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1], // 3a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1], // 3b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1], // 3c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1, -1], // 3d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1, -1], // 3e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1, -1,  0, -1], // 3f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1, -1, -1,  0], // 3g
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1], // 4a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1, -1], // 4b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1, -1], // 4c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1, -1], // 4d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60, -1], // 4e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60, -1, 60], // 4f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1,-60,  0]]; // 4g
+
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+    var yMov =     [[ -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1a
+                   [   0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1b
+                   [  -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1c
+                   [  -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1d
+                   [  -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1e
+                   [  -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1f
+                   [  -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 1g
+                   [ -60, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2a
+                   [  -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2b
+                   [  -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2c
+                   [  -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2d
+                   [  -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1, -1], // 2e
+                   [  -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1, -1], // 2f
+                   [  -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1, -1], // 2g
+                   [  -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1, -1], // 3a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1, -1], // 3b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1, -1], // 3c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1, -1], // 3d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1, -1], // 3e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1, -1, 60, -1], // 3f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, 60], // 3g
+    //                1a  1b  1c  1d  1e  1f  1g  2a  2b  2c  2d  2e  2f  2g  3a  3b  3c  3d  3e  3f  3g  4a  4b  4c  4d  4e  4f  4g
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1, -1, -1,  0, -1, -1, -1, -1, -1], // 4a
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1, -1], // 4b
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1, -1], // 4c
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1, -1], // 4d
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0, -1], // 4e
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0, -1,  0], // 4f
+                   [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-60, -1, -1, -1, -1, -1,  0,  0]]; // 4g
+
+
+    function animate() {
+        requestAnimFrame( animate );
+
+        // animate le background
+        backgroundScroll();
+
+        // display modal if true
+        if (displayModal == true){
+            detailsModalBackground.alpha += 0.1
+            if (detailsModalBackground.alpha >= 1){
+                displayModal = false;
+            }
+        }
+
+        xMovementCheck = hero.position.x; //+ origXLoc;
+        yMovementCheck = hero.position.y; //+ origYLoc;
+        if ((xMovementCheck != snapshotXPos + updatedX) || (yMovementCheck != snapshotYPos + updatedY)){
+            if (updatedX > 0){
+                hero.position.x += 5;
+            } else if (updatedX < 0) {
+                hero.position.x -= 5;
+            }
+            if (updatedY > 0){
+                hero.position.y += 5;
+            } else if (updatedY < 0) {
+                hero.position.y -= 5;
+            }
+
+           if (backFlushTrans == true){
+                blackBackground.alpha = 1;
+                backFlushTrans = false;
+            } else {
+                blackBackground.alpha -= .02;
+            }
+        } else {
+            if (goalReached == true){
+                // perform Q calculation of reaching goal node
+                // grid location to array mapping
+                var row = gridMovementToArrayMap(snapshotXPos, snapshotYPos);
+                // for whichever state we are in, find the max Q of current states actions for navigation to next state
+                maxQResult = findMaxQ(row, true);
+                performQCalculation(previousRow, previousMaxQResult, row, maxQResult);
+
+                goalReached = false;
+                //hero.clear();
+                hero.removeStageReference();
+                stage.removeChild(hero);    // bobo revisit -- also add graphic.clear, make sure references removed
+                hero = new PIXI.Sprite(texture1);                
+                constructHero();
+
+                // begin background flush animation
+                backFlushTrans = true;
+                if (chooseBackground == false){
+                    background.texture = PIXI.Texture.fromImage("gradient2.jpg");
+                    background2.texture = PIXI.Texture.fromImage("gradient2.jpg");
+                    chooseBackground = true;
+                } else {
+                    background.texture = PIXI.Texture.fromImage("gradient1.jpg");
+                    background2.texture = PIXI.Texture.fromImage("gradient1.jpg");   
+                    chooseBackground = false;                
+                }
+
+                // increment iterationCount for textView
+                iterationCount += 1;
+                iterationCounterText.setText(iterationCount);
+
+                // reset reward count
+                if (movementResult == 10 || movementResult == 23){
+                    totalRewardCount -= 500;
+                    totalRewardCountText.setText(totalRewardCount);
+                } else if (movementResult == 27){
+                    totalRewardCount += 100;
+                    totalRewardCountText.setText(totalRewardCount);                   
+                }
+            }
+
+
+            // update the position for hero to travel
+            snapshotXPos = hero.position.x //+ origXLoc;
+            snapshotYPos = hero.position.y //+ origYLoc;
+
+            // grid location to array mapping
+            var row = gridMovementToArrayMap(snapshotXPos, snapshotYPos);
+
+            // for whichever state we are in, find the max Q of current states actions for navigation to next state
+            maxQResult = findMaxQ(row, true);
+
+            if (firstPass == false){
+                // perform Q calculation for next state (current state), store it in Q table for previous state
+                performQCalculation(previousRow, previousMaxQResult, row, maxQResult);
+            }
+
+            // move hero to the state with highest found Q value from previous
+            if (doubleLearning == false){
+                updatedX = xMov[row][maxQResult[1]];
+                updatedY = yMov[row][maxQResult[1]];
+            } else {
+                updatedX = xMov[row][maxQResult[5]];
+                updatedY = yMov[row][maxQResult[5]];
+            }
+
+            if (speedyLearning == false){
+                previousRow = row;
+                previousMaxQResult = maxQResult; // findMaxQ(row, false);
+
+                firstPass = false;
+            } else {
+                prevPrevRow = previousRow;
+                prevPrevMaxQResult = previousMaxQResult;
+                previousRow = row;
+                previousMaxQResult = maxQResult;
+
+                // need chain of two states for speedy q-learning
+                if (speedyCount > 2){
+                    firstPass = false;
+                }
+                speedyCount += 1;
+            }
+
+
+            // if goal node is found, restart position of hero to beginning
+            movementResult = gridMovementToArrayMap(snapshotXPos + updatedX, snapshotYPos + updatedY) 
+            if ((movementResult == 27) || (movementResult == 10) || (movementResult == 23)){
+                goalReached = true;
+                firstPass = true;
+            }
+        }
+ 
+        // render the stage   
+        renderer.render(stage);
+    }
+
+
+    /*
+     *
+     */
+    function createQTableDisplay(){
+        detailsModalBackground = new PIXI.Sprite(blackTexture);
+        detailsModalBackground.alpha = 0;
+        detailsModalBackground.position.x = 420;
+        stage.addChild(detailsModalBackground);
+
+        // print labels once across top
+        labelInc = 50;
+        for (var i = 0; i < labels.length; i++){
+            var labelText = new PIXI.Text(labels[i], {font:"13px Arial", fill:"white"});
+            labelText.x = labelInc;
+            labelText.y = 10;
+            detailsModalBackground.addChild(labelText);     
+            labelInc += 40;  
+        }
+
+        xTextInc = 50;
+        yTextInc = 30;
+        for (var i = 0; i < qtable.length; i++){
+            // add label
+            var labelTextLeft = new PIXI.Text(labels[i], {font:"13px Arial", fill:"white"});
+            labelTextLeft.x = xTextInc - 30;
+            labelTextLeft.y = yTextInc;
+            detailsModalBackground.addChild(labelTextLeft);
+            var labelTextRight = new PIXI.Text(labels[i], {font:"13px Arial", fill:"white"});
+            labelTextRight.x = 1670;
+            labelTextRight.y = yTextInc;
+            detailsModalBackground.addChild(labelTextRight);
+
+            for (var j = 0; j < qtable[i].length; j++){
+                var text = new PIXI.Text("0", {font:"13px Arial", fill:"white"});
+                text.x = xTextInc;
+                text.y = yTextInc;
+                detailsModalBackground.addChild(text);
+                xTextInc += 40;
+                qtableText[i][j] = text;
+            }
+            yTextInc += 25;
+            xTextInc = 50;
+
+        } 
+    }
+
+    /*
+     *
+     */
+    function backgroundScroll(){
+        if (backBool == false){
+            background.position.x -= 20;
+            trackBackgroundPos += 20;
+            if (trackBackgroundPos >= 1190){
+                background2.position.x -= 20;
+                if (trackBackgroundPos >= 1920){
+                    background.position.x = 720;
+                    trackBackgroundPos = 0;
+                    backBool = true;
+                }
+            }
+        } else {
+            background2.position.x -= 20;
+            trackBackgroundPos += 20;
+            if (trackBackgroundPos >= 1190){
+                background.position.x -= 20;
+                if (trackBackgroundPos >= 1920){
+                    background2.position.x = 720;
+                    trackBackgroundPos = 0;
+                    backBool = false;
+                }
+            }
+        }
+    }
+
+
+    /*
+     *
+     */
+    function gridMovementToArrayMap(x, y){
+        var row = Math.ceil(x / 60);
+        var yCalc = Math.floor(y / 60);
+        row += (yCalc * 7);
+        return (row - 1); // mapping physical rows (1) to array (indexed from 0)
+    }
+
+
+    /*
+     *
+     */
+    function performQCalculation(previousRow, previousMaxQ, row, maxQ){
+        if (regularLearning == true){
+            var qCalculation = qtable[previousRow][previousMaxQ[1]] + (0.8 * (rewards[previousRow][previousMaxQ[1]] + maxQ[0] - qtable[previousRow][previousMaxQ[1]])); 
+            qtable[previousRow][previousMaxQ[1]] = qCalculation;
+            qtableText[previousRow][previousMaxQ[1]].setText(qCalculation);
+        } else if (delayedLearning == true){
+            if (delayedLearnFlags[previousRow][previousMaxQ[1]] == true){
+                //console.log("delayed learning 0");
+                //delayedAttemptedUpdates[previousRow][previousMaxQ[1]] += rewards[previousRow][previousMaxQ[1]] + maxQ[0];
+                var delayedReward = 0;
+                if (rewards[previousRow][previousMaxQ[1]] == 100){
+                    delayedReward = 1;
+                } else {
+                    delayedReward = rewards[previousRow][previousMaxQ[1]];
+                }
+                delayedAttemptedUpdates[previousRow][previousMaxQ[1]] += (0.8 * (delayedReward + maxQ[0]));
+                delayedCounters[previousRow][previousMaxQ[1]] += 1;
+
+                if (delayedCounters[previousRow][previousMaxQ[1]] == delayedSampleAmount){
+                    if (qtable[previousRow][previousMaxQ[1]] - (delayedAttemptedUpdates[previousRow][previousMaxQ[1]] / delayedSampleAmount) >= (2 * delayedEpsilon)){
+                        var delayedQCalculation = (delayedAttemptedUpdates[previousRow][previousMaxQ[1]] / delayedSampleAmount) + delayedEpsilon;
+                        qtable[previousRow][previousMaxQ[1]] = delayedQCalculation;
+                        qtableText[previousRow][previousMaxQ[1]].setText(delayedQCalculation);
+                        delayedMostRecentTime = iterationCount;
+                        //console.log("delayed learning 1");
+                    } else if (delayedTimes[previousRow][previousMaxQ[1]] >= delayedMostRecentTime){
+                        delayedLearnFlags[previousRow][previousMaxQ[1]] = false;
+                        //console.log("delayed learning 2");
+                    } 
+                    delayedTimes[previousRow][previousMaxQ[1]] = iterationCount;
+                    delayedAttemptedUpdates[previousRow][previousMaxQ[1]] = 0;
+                    //delayedLearnFlags[previousRow][previousMaxQ[1]] = 0;
+                    delayedCounters[previousRow][previousMaxQ[1]] = 0;
+                    //console.log("delayed learning 3");
+                }
+            } else if (delayedTimes[previousRow][previousMaxQ[1]] < delayedMostRecentTime){
+                delayedLearnFlags[previousRow][previousMaxQ[1]] = true;
+                //console.log("delayed learning 4");
+            }
+        } else if (doubleLearning == true){
+
+            // choose randomly between A q-table and B q-table
+            var qTableChoice = Math.floor(Math.random()*(2)+1);
+
+            if (qTableChoice == 1){
+                // A q-table
+                var qCalculation = qtable[previousRow][previousMaxQ[5]] + (0.8 * (rewards[previousRow][previousMaxQ[5]] + maxQ[2] - qtable[previousRow][previousMaxQ[5]])); 
+                qtable[previousRow][previousMaxQ[5]] = qCalculation;
+                qtableText[previousRow][previousMaxQ[1]].setText(qCalculation);
+            } else if (qTableChoice == 2){
+                // B q-table
+                var qCalculation = doubleBTable[previousRow][previousMaxQ[5]] + (0.8 * (rewards[previousRow][previousMaxQ[5]] + maxQ[0] - doubleBTable[previousRow][previousMaxQ[5]])); 
+                doubleBTable[previousRow][previousMaxQ[5]] = qCalculation;         
+            }
+
+        } else if (speedyLearning == true){
+            // (0.8 * (delayedReward + maxQ[0]));
+            //var qCalculation = qtable[previousRow][previousMaxQ[1]] + (0.8 * (rewards[previousRow][previousMaxQ[1]] + maxQ[0] - qtable[previousRow][previousMaxQ[1]])); 
+            //var qCalculation = qtable[previousRow][previousMaxQ[1]] + (0.8 * (rewards[prevPrevRow][prevPrevMaxQResult[1]] + previousMaxQ[0] - qtable[previousRow][previousMaxQ[1]])) + (0.2 * (rewards[previousRow][previousMaxQ[1]] + maxQ[0]) - (rewards[prevPrevRow][prevPrevMaxQResult[1]] + previousMaxQ[0]));
+            //var qCalculation = qtable[previousRow][previousMaxQ[1]] + (0.8 * (rewards[previousRow][previousMaxQ[1]] + maxQ[0] - qtable[previousRow][previousMaxQ[1]])); 
+            var qCalculation = qtable[previousRow][previousMaxQ[1]] + (0.8 * (rewards[previousRow][previousMaxQ[1]] + previousMaxQ[0])) + (0.2 * ((rewards[previousRow][previousMaxQ[1]] + maxQ[0]) - (rewards[previousRow][previousMaxQ[1]] + previousMaxQ[0])));
+            qtable[previousRow][previousMaxQ[1]] = qCalculation;    
+            qtableText[previousRow][previousMaxQ[1]].setText(qCalculation);
+        }
+    }
+
+    /*
+     *
+     */
+    function findMaxQ(row, navigation){
+        var maxQ = 0;
+        var maxQB = 0;
+        var doubleAbsoluteQ = 0;
+        var indexFound = 0;
+        var indexFoundB = 0;
+        var doubleAbsoluteIndex = 0;
+        var qOnlyValid = false;
+        var qBOnlyValid = false;
+        var doubleAbsoluteValid = false;
+
+        // look at reward table to determine valid actions for current state.
+        for (i = 0; i < rewards[row].length; i++){
+            // only evaluate on valid actions
+            if (rewards[row][i] != -1){
+                if (qtable[row][i] > maxQ){
+                    // highest Q value found and index are returned
+                    maxQ = qtable[row][i];
+
+                    indexFound = i;
+                    qOnlyValid = true;
+                } else if (qtable[row][i] == maxQ){
+                    qOnlyValid = false;
+                }
+
+                // if double learning enabled, do same for B array
+                if (doubleLearning == true){
+                    if (doubleBTable[row][i] > maxQB){
+                        // highest Q value found and index are returned
+                        maxQB = doubleBTable[row][i];
+
+                        indexFoundB = i;
+                        qBOnlyValid = true;
+                    } else if (doubleBTable[row][i] == maxQB){
+                        qBOnlyValid = false;
+                    }
+                }
+            }
+        }
+
+        // find absolute maxQ if double learning
+        if (doubleLearning == true){
+            if (maxQB > maxQ){
+                doubleAbsoluteQ = maxQB; 
+                doubleAbsoluteIndex = indexFoundB;
+                doubleAbsoluteValid = true;
+            } else if (maxQB < maxQ) {
+                doubleAbsoluteQ = maxQ;
+                doubleAbsoluteIndex = indexFound;
+                doubleAbsoluteValid = true;
+            } else {
+                doubleAbsoluteQ = maxQ;
+                doubleAbsoluteIndex = indexFound;
+                doubleAbsoluteValid = false;
+            }
+        }
+
+
+        if (qOnlyValid == false){
+            var locationsToRandomize = [];
+            // second loop to determine other indexes where maxQ was found, inefficient I know
+            for (i = 0; i < rewards[row].length; i++){
+                // only evaluate on valid actions
+                if (rewards[row][i] != -1){
+                    if (qtable[row][i] == maxQ){
+                        locationsToRandomize.push(i);
+                    }
+                }
+            }
+
+            // set indexFound to one of the locationsToRandomize values randomly
+            indexFound = locationsToRandomize[Math.floor(Math.random() * locationsToRandomize.length)];
+        }
+
+        // if double learning, randomize locations for b-table
+        if (doubleLearning == true){
+            if (qBOnlyValid == false){
+                var locationsToRandomizeB = [];
+                for (var i = 0; i < rewards[row].length; i++){
+                    if (rewards[row][i] != -1){
+                        if (doubleBTable[row][i] == maxQB){
+                            locationsToRandomizeB.push(i);
+                        }                      
+                    }
+                }
+
+                // set indexFoundB to one of the locationsToRandomizeB values randomly
+                indexFoundB = locationsToRandomizeB[Math.floor(Math.random() * locationsToRandomizeB.length)];
+            }
+
+            if (doubleAbsoluteValid == false){
+                // find absolute locationsToRandomize
+                var doubleAbsoluteRandomize = [];
+                for (var i = 0; i < rewards[row].length; i++){
+                    if (rewards[row][i] != -1){
+                        // a-table
+                        if (qtable[row][i] == doubleAbsoluteQ){
+                            doubleAbsoluteRandomize.push(i);
+                        }
+
+                        // b-table
+                        if (doubleBTable[row][i] == doubleAbsoluteQ){
+                            doubleAbsoluteRandomize.push(i);
+                        }                      
+                    }                
+                }
+
+                // set doubleAbsoluteIndex to doubleAbsoluteRandomize values randomly
+                doubleAbsoluteIndex = doubleAbsoluteRandomize[Math.floor(Math.random() * doubleAbsoluteRandomize.length)];
+            }
+        }
+
+        // bobo debug
+        //if (row == 9){
+        //    console.log("findMaxQ: maxQ = " + maxQ);
+        //    console.log("findMaxQ: indexFound = " + indexFound);
+        //    console.log("");
+        //}
+
+        return [maxQ, indexFound, maxQB, indexFoundB, doubleAbsoluteQ, doubleAbsoluteIndex];
+    }
+
+    /*
+     *
+     */
+    function randStartingPosition(){
+        // return random number between 1 and 28 (number of spaces available)
+         var placement = Math.floor(Math.random()*(28)+1);
+         var xAdj = placement % 7;
+         var x = 0;
+
+         if (xAdj == 0){
+            x = 10;  
+         } else {
+            if ((placement - 1) % 7 == 0){
+                x = 60 + 10;
+            } else if ((placement - 2) % 7 == 0){
+                x = (2 * 60) + 10;
+            } else if ((placement - 3) % 7 == 0){
+                x = (3 * 60) + 10;
+            } else if ((placement - 4) % 7 == 0){
+                x = (4 * 60) + 10;
+            } else if ((placement - 5) % 7 == 0){
+                x = (5 * 60) + 10;
+            } else if ((placement - 6) % 7 == 0){
+                x = (6 * 60) + 10;
+            }
+         }
+
+         var yAdj = Math.ceil(placement / 7);
+         var y = ((yAdj - 1) * 60) + 15;
+
+         return [x, y];
+    }
+
+    /*
+     *
+     */
+    function constructHero(){   
+
+        // choose starting position
+        startingXY = randStartingPosition();    
+
+        hero.position.x = startingXY[0];
+        hero.position.y = startingXY[1];
+
+        stage.addChild(hero);
+
+        origXLoc = startingXY[0]; // hero.x;
+        origYLoc = startingXY[1]; // hero.y;
+
+        snapshotXPos = startingXY[0];
+        snapshotYPos = startingXY[1];
+    }
+
+    /*
+     *
+     */
+    function constructEnemies(){
+        enemy1.position.x = 185;
+        enemy1.position.y = 70;
+
+        enemy2.position.x = 125;
+        enemy2.position.y = 190;
+
+        stage.addChild(enemy1);
+        stage.addChild(enemy2);        
+    }
+
+    /*
+     *
+     */
+     function constructGoal(g, x, y){
+        goal.position.x = 370;
+        goal.position.y = 190;
+        stage.addChild(goal);
+     }
+
+    /*
+     *  draw horizontal lines
+     */
+    function drawHorizontalLines() {
+        var addingElements = true;
+        var yPos = 60;
+        var horizIteration = 0;
+        while (addingElements == true){
+            // draw lines to create grid
+            var graphics = new PIXI.Graphics(); 
+            graphics.beginFill(0x000000);
+            graphics.moveTo(0,yPos);
+            graphics.drawRect(0, yPos, 420, 2);
+            // end the fill
+            graphics.endFill();
+            // add it the stage so we see it on our screens..
+            stage.addChild(graphics);
+            horizIteration += 1;
+            yPos += 60;
+            if (horizIteration >= 4){
+                addingElements = false;
+            }
+        }
+    }
+
+    /*
+     * draw vertical lines
+     */
+    function drawVerticalLines(){
+        addingElements = true;
+        var xPos = 60;
+        var vertIteration = 0;
+        // draw vertical lines
+        while (addingElements == true){
+            // draw lines to create grid
+            var graphics = new PIXI.Graphics();
+            graphics.beginFill(0x000000);
+            graphics.moveTo(xPos,0);
+            graphics.drawRect(xPos, 0, 2, 240);
+            // end the fill
+            graphics.endFill();
+            // add it the stage so we see it on our screens..
+            stage.addChild(graphics);
+            vertIteration += 1;
+            xPos += 60;
+            if (vertIteration >= 7){
+                addingElements = false;
+            }    
+        }
+    }
+
+    /*
+     *
+     */
+    function createRegularButton(){
+        dashboardButton.beginFill(0x4040c4);
+        dashboardButton.moveTo(470, 185);
+        dashboardButton.drawRect(470, 185, 80, 35);
+        dashboardButton.endFill();
+        stage.addChild(dashboardButton);
+
+        // add text for details button
+        detailsText.x = 480;
+        detailsText.y = 195;
+        //detailsText.interactive = true;
+        stage.addChild(detailsText);
+
+        dashboardButtonOverlay.beginFill(0x4040c4);
+        dashboardButtonOverlay.moveTo(470, 185);
+        dashboardButtonOverlay.drawRect(470, 185, 80, 35);
+        dashboardButtonOverlay.endFill();
+        dashboardButtonOverlay.interactive = true;
+        dashboardButtonOverlay.alpha = 0;
+        stage.addChild(dashboardButtonOverlay);
+    }
+
+    /*
+     *
+     */
+    function createDelayedButton(){
+        delayedButton.beginFill(0x4040c4);
+        delayedButton.moveTo(570, 185);
+        delayedButton.drawRect(570, 185, 80, 35);
+        delayedButton.endFill();
+        stage.addChild(delayedButton);
+
+        // add text for details button
+        delayedText.x = 580;
+        delayedText.y = 195;
+        //delayedText.interactive = true;
+        stage.addChild(delayedText);
+
+        delayedButtonOverlay.beginFill(0x4040c4);
+        delayedButtonOverlay.moveTo(570, 185);
+        delayedButtonOverlay.drawRect(570, 185, 80, 35);
+        delayedButtonOverlay.endFill();
+        delayedButtonOverlay.interactive = true;
+        delayedButtonOverlay.alpha = 0;
+        stage.addChild(delayedButtonOverlay);
+    }
+
+    /*
+     *
+     */
+    function createDoubleButton(){
+        doubleButton.beginFill(0x4040c4);
+        doubleButton.moveTo(670, 185);
+        doubleButton.drawRect(670, 185, 80, 35);
+        doubleButton.endFill();
+        stage.addChild(doubleButton);
+
+        // add text for details button
+        doubleText.x = 685;
+        doubleText.y = 195;
+        //doubleText.interactive = true;
+        stage.addChild(doubleText);  
+
+        doubleButtonOverlay.beginFill(0x4040c4);
+        doubleButtonOverlay.moveTo(670, 185);
+        doubleButtonOverlay.drawRect(670, 185, 80, 35);
+        doubleButtonOverlay.endFill();
+        doubleButtonOverlay.interactive = true;
+        doubleButtonOverlay.alpha = 0;
+        stage.addChild(doubleButtonOverlay);
+
+    }
+
+    /*
+     *
+     */
+    function createSpeedyButton(){
+        speedyButton.beginFill(0x4040c4);
+        speedyButton.moveTo(670, 185);
+        speedyButton.drawRect(770, 185, 80, 35);
+        speedyButton.endFill();
+        stage.addChild(speedyButton);
+
+        // add text for details button
+        speedyText.x = 782;
+        speedyText.y = 195;
+        //speedyText.interactive = true;
+        stage.addChild(speedyText); 
+
+        speedyButtonOverlay.beginFill(0x4040c4);
+        speedyButtonOverlay.moveTo(670, 185);
+        speedyButtonOverlay.drawRect(770, 185, 80, 35);
+        speedyButtonOverlay.endFill();
+        speedyButtonOverlay.interactive = true;
+        speedyButtonOverlay.alpha = 0;
+        stage.addChild(speedyButtonOverlay);       
+    }
+
+    /*
+     *
+     */
+    function createQTableButton(){
+        
+        viewQTableButton.beginFill(0x4040c4);
+        viewQTableButton.moveTo(10, 285);
+        viewQTableButton.drawRect(10, 285, 130, 35);
+        viewQTableButton.endFill();
+        stage.addChild(viewQTableButton);
+        
+        // add text for details button
+        viewQButtonText.x = 18;
+        viewQButtonText.y = 295;
+        //speedyText.interactive = true;
+        stage.addChild(viewQButtonText); 
+
+        viewQTableButtonOverlay.beginFill(0x4040c4);
+        viewQTableButtonOverlay.moveTo(10, 285);
+        viewQTableButtonOverlay.drawRect(10, 285, 130, 35);
+        viewQTableButtonOverlay.endFill();
+        viewQTableButtonOverlay.interactive = true;
+        viewQTableButtonOverlay.alpha = 0;
+        stage.addChild(viewQTableButtonOverlay);    
+    }
+ 
+ 
+    </script>
+ 
+    </body>
+</html>

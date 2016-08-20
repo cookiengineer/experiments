@@ -1,0 +1,9 @@
+db/
+bin/
+antbin/
+.classpath
+.metadata
+.settings
+.project
+ahni.jar
+hs_err*

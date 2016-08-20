@@ -1,0 +1,585 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Animate</title>
+	<link href='https://fonts.googleapis.com/css?family=NTR' rel='stylesheet' type='text/css'>
+	<style>
+		body{ font-family: 'NTR', sans-serif; text-align:center; max-width:820px;margin:0 auto; }
+		canvas{ width:800px; margin:0 auto; box-shadow: 0 0 10px 0 rgba(0,0,0,0.3); }
+		.panel{ box-shadow: 0 0 2px 0 rgba(0,0,0,0.3); line-height:10px; padding:10px; margin:10px; }
+	</style>
+</head>
+<body>
+	<h3>Canvas</h3>
+	<div><canvas id="canvas" width="800" height="500" style="background:#fff;"></canvas></div>
+	<div><label for="" id="label"></label></div>
+	<div class="panel" id="buttons">Shape: </div>
+	<div class="panel" id="stencils">Stencil: </div>
+	<script>
+
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext("2d");
+		var animations = [];
+		var tick = false;
+		var sprites = [];
+		var r = (canvas.height / 2) - 100;
+		var centerx = canvas.width / 2;
+		var centery = canvas.height / 2;
+		var number_of_items = 2000;
+
+		var stencil = 'square';
+
+var RandomPointIn = {
+	'Circle' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Circle';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.cos(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		}
+	},
+	'Oval' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Oval';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * 2 * Math.cos(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		}
+	},
+	'Ruffle' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Ruffle';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.sin(2 * Math.PI * d / c)),
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		}
+	},
+	'Gradient' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Gradient';
+
+		return {
+			x: x + (r / 3 * Math.tan( Math.random() * 360)),
+			y: Math.random() * canvas.height
+		}
+	},
+	'LinearFade' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'LinearFade';
+
+		return {
+			x: (canvas.width / 2.6) + (r / 2 * Math.log( Math.random() * canvas.width )),
+			y: Math.random() * canvas.height
+		}
+	},
+	'VignetteFill' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Vignette Fill';
+
+		return {
+			x: (canvas.width / 2) + Math.sin( Math.random() * 360 ) * (canvas.width / 2),
+			y: (canvas.height / 2) + Math.sin( Math.random() * 360 ) * (canvas.height / 2)
+		}
+	},
+	'CurveA' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'CurveA';
+
+		var inc = Math.random();
+
+		return {
+			x: Math.cos(inc * 0.5 * Math.PI) * (canvas.width),
+			y: Math.sin(inc * 2 * Math.PI) * (canvas.height * 0.5) + (canvas.height * 0.5)
+		}
+	},
+	'CurveB' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'CurveB';
+
+		var inc = Math.random();
+
+		return {
+			x: Math.sin(inc * 0.5 * Math.PI) * (canvas.width),
+			y: Math.cos(inc * 2 * Math.PI) * (canvas.height * 0.5) + (canvas.height * 0.5)
+		}
+	},
+	'Test' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Test';
+
+		var inc = Math.random();
+
+		return {
+			x: Math.sin(inc * 0.5 * Math.PI) * (canvas.width),
+			y: Math.cos(inc * 2 * Math.PI) * (canvas.height * 0.5) + (canvas.height * 0.5)
+		}
+	},
+	'Curve' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Curve';
+
+		var inc = Math.random();
+
+		return {
+			x: Math.sin(inc * 0.5 * Math.PI)* canvas.width,
+			y: Math.cos(inc * 0.5 * Math.PI)* canvas.height
+		}
+	},
+	'EdgeSquare' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'EdgeSquare';
+
+		return {
+			x: x + (r * Math.sin( Math.random() * 360)),
+			y: y + (r * Math.cos( Math.random() * 360))
+		}
+	},
+	'HalfCircle' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Half Circle';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.sin(1 * Math.PI * c / d)),
+			y: y + (d * r * Math.cos(1 * Math.PI * c / d))
+		}
+	},
+	'QuarterCircle' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Quarter Circle';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.sin(0.5 * Math.PI * c / d)),
+			y: y + (d * r * Math.cos(0.5 * Math.PI * c / d))
+		}
+	},
+	'BigSnail' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'BigSnail';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < (a * 2)) {
+			c = b;
+			d = a * 1.5;
+		}
+		return {
+			x: x + (d * r * Math.sin(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.cos(2 * Math.PI * c / d))
+		}
+	},
+	'Burst' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Burst';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.cos(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.cos(2 * Math.PI * c / d))
+		}
+	},
+	'HorizHourGlass' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Horizontal Hour Glass';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.tan(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		}
+	},
+	'HorizLine' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Horizontal line';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.cos(2 * Math.PI * c / d)),
+			y: y
+		}
+	},
+	'VertLine' : function(x, y, r) {
+
+		document.getElementById('label').innerHTML = 'Vert grad line';
+
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+
+		if (b < a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x,
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		}
+	},
+	'Spiral' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Spiral';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.cos(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.sin(2 * Math.PI * c / d))
+		};
+	},
+	'Triangle' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Triangle (weighted left corner)';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (d * r * Math.atan(2 * Math.PI * c / d)),
+			y: y + (d * r * Math.cos(2 * Math.PI * c / d))
+		};
+	},
+	'Fold' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Fold';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.atan(2 * Math.PI * d / c)),
+			y: y + (c * r * Math.cos(2 * Math.PI * d / c))
+		};
+	},
+	'EvenTriangle' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'EvenTriangle';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.atan(4 * Math.PI * c / d)),
+			y: y + (c * r * Math.cos(4 * Math.PI * c / d))
+		};
+	},
+	'Fountain' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Fountain';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (0.01 * c * r * Math.tan(2 * Math.PI * c / d)),
+			y: y + (c * r * Math.cos(4 * Math.PI * c / d))
+		};
+	},
+	'PlugHole' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'PlugHole';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (0.1 * c * r * Math.tan(2 * Math.PI * c / d)),
+			y: y + (c * r * Math.cos(4 * Math.PI * c / d))
+		};
+	},
+	'AngleLine' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'AngleLine';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.tan(2 * Math.PI * c / d)),
+			y: y + (c * r * Math.tan(2 * Math.PI * c / d))
+		};
+	},
+	'Universe' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Universe';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * Math.cos(2 * Math.PI * c / d)),
+			y: y + (c * r * Math.tan(2 * Math.PI * c / d))
+		};
+	},
+	'HourGlass' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'HourGlass';
+		var a = Math.random();
+		var b = Math.random();
+		c = a;
+		d = b;
+		if (b > a) {
+			c = b;
+			d = a;
+		}
+		return {
+			x: x + (c * r * 1.2 * Math.sin(2 * Math.PI * c / d)),
+			y: y + (c * r * Math.tan(2 * Math.PI * c / d))
+		};
+	},
+	'Fill' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Fill';
+		return {
+			x: Math.random() * canvas.width,
+			y: Math.random() * canvas.height
+		};
+	},
+	// 'Test' : function(x, y, r) {
+	// 	document.getElementById('label').innerHTML = 'Test';
+	// 	var a = Math.random();
+	// 	var b = Math.random();
+	// 	c = a;
+	// 	d = b;
+	// 	if (b > a) {
+	// 		c = b;
+	// 		d = a;
+	// 	}
+	// 	return {
+	// 		x: x + (c * r * 1.2 * Math.sin(2 * Math.PI * c / d)),
+	// 		y: y + (c * r * Math.tan(2 * Math.PI * c / d))
+	// 	};
+	// },
+	'Square' : function(x, y, r) {
+		document.getElementById('label').innerHTML = 'Square';
+
+		var a = (Math.random() * r) - (r / 2);
+		var b = (Math.random() * r) - (r / 2);
+	  
+		return {
+			x: x + a,
+			y: y + b
+		};
+	}
+}
+
+var Draw = {
+	point : function (sprite){
+		ctx.fillStyle = sprite.fill;
+		ctx.fillRect(sprite.x, sprite.y, 1, 1);
+	},
+	square : function (sprite){
+		ctx.fillStyle = sprite.fill;
+		ctx.fillRect(sprite.x - (sprite.r / 2), sprite.y - (sprite.r / 2), sprite.r, sprite.r);
+	}
+}
+		function color(){
+			var colors = ['rgba(255,0,0,0.4)', 'rgba(255,255,0,0.4)', 'rgba(255,0,255,0.4)'];
+			var index = Math.floor(Math.random() * colors.length);
+			return colors[index];
+		}
+
+		function create_sprite(){
+			var sprite = RandomPointIn.Test(centerx, centery, r);
+			sprite.r = (Math.random() * 5) + 1;
+			sprite.target = RandomPointIn.Test(centerx, centery, r);
+			sprite.speed = Math.round(Math.random() * 12) + 4
+			sprite.fill = color();
+			sprites.push(sprite);
+		}
+
+		for (var i = 0; i < number_of_items; i++) {
+			create_sprite();
+		}
+
+
+		function render() {
+
+			ctx.beginPath();
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			for (var i = sprites.length - 1; i >= 0; i--) {
+				var s = sprites[i];
+				// draw the sprite:
+				Draw[stencil](s);
+				if( s.target ){
+					Engine.animate(s);
+				}
+			}
+		}
+
+		function rect(x, y, width, height){
+			ctx.fillRect(x, y, width, height);
+		}
+
+		
+
+
+		// Called every 2 seconds, this changes the target of each dot to a random position
+		function changeShape(){
+			
+			var shapeArray  = Object.keys(RandomPointIn);
+			var index = Math.floor(Math.random() * shapeArray.length);
+			var shape = shapeArray[index];
+			// var shape = "Test"
+			for (var i = sprites.length - 1; i >= 0; i--) {
+				// for each sprite, call the randomly chosen function:
+				sprites[i].target = RandomPointIn[shape](centerx, centery, r);
+			}
+			
+		}
+
+		tick = setInterval(function(){
+			render();
+		}, 1000 / 40);
+
+		// setInterval(function(){
+		// 	changeShape();
+		// }, 2000);
+
+		var Engine = {
+
+			animate : function(item){
+				for (attr in item.target ) {
+					// clearInterval(tick);
+					var increment = (item.target[attr] - item[attr]) / item.speed
+					item[attr] += increment;
+
+				}
+			}
+		}
+
+		// Random on click
+		canvas.onclick = function(){
+			changeShape();
+		}
+
+		// Select shape
+		for ( shape in RandomPointIn ) {
+			var buttons = document.getElementById("buttons");
+			var newNode = document.createElement("button");
+			newNode.innerHTML = shape;
+			newNode.onclick = function(){
+				var current = this.innerHTML;
+				for (var i = sprites.length - 1; i >= 0; i--) {
+					// for each sprite, call the randomly chosen function:
+					sprites[i].target = RandomPointIn[current](centerx, centery, r);
+				}
+			}
+			buttons.appendChild(newNode);
+		}
+
+		for(item in Draw){
+			var buttons = document.getElementById("stencils");
+			var newNode = document.createElement("button");
+			newNode.innerHTML = item;
+			newNode.onclick = function(){
+				stencil = this.innerHTML
+			}
+			buttons.appendChild(newNode);
+		}
+
+</script>
+</body>
+</html>
+

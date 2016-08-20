@@ -1,0 +1,20 @@
+
+
+Motors:
+
+Each Motor min 0.3 A (320mA), so 640mA battery pack is required
+
+
+Min RPM is at  2V
+Max RPM is at 12V
+
+
+TODO:
+
+- Battery Pack
+- Voltage Regulator
+- ESP8266 Integration
+
+- HTML5 Interface
+- Remote Control REST Service (RPi or ESP?)
+

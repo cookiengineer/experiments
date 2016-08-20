@@ -1,0 +1,11 @@
+build/
+datadump/*
+*.test
+*.csv
+*.png
+*.gen
+*.xml
+*core*
+/Release/
+/Debug/
+/dist/
