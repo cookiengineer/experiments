@@ -77,40 +77,6 @@ end
 
 
 
-function crossover(g1, g2)
-	-- Make sure g1 is the higher fitness genome
-	if g2.fitness > g1.fitness then
-		tempg = g1
-		g1 = g2
-		g2 = tempg
-	end
-
-	local child = newGenome()
-	
-	local innovations2 = {}
-	for i=1,#g2.genes do
-		local gene = g2.genes[i]
-		innovations2[gene.innovation] = gene
-	end
-	
-	for i=1,#g1.genes do
-		local gene1 = g1.genes[i]
-		local gene2 = innovations2[gene1.innovation]
-		if gene2 ~= nil and math.random(2) == 1 and gene2.enabled then
-			table.insert(child.genes, copyGene(gene2))
-		else
-			table.insert(child.genes, copyGene(gene1))
-		end
-	end
-	
-	child.maxneuron = math.max(g1.maxneuron,g2.maxneuron)
-	
-	for mutation,rate in pairs(g1.mutationRates) do
-		child.mutationRates[mutation] = rate
-	end
-	
-	return child
-end
 
 function randomNeuron(genes, nonInput)
 	local neurons = {}
@@ -159,7 +125,7 @@ function containsLink(genes, link)
 end
 
 function pointMutate(genome)
-	local step = genome.mutationRates["step"]
+	local step = 0.1; -- StepSize (Mutation Rate)
 	
 	for i=1,#genome.genes do
 		local gene = genome.genes[i]
@@ -229,75 +195,7 @@ function nodeMutate(genome)
 	table.insert(genome.genes, gene2)
 end
 
-function enableDisableMutate(genome, enable)
-	local candidates = {}
-	for _,gene in pairs(genome.genes) do
-		if gene.enabled == not enable then
-			table.insert(candidates, gene)
-		end
-	end
-	
-	if #candidates == 0 then
-		return
-	end
-	
-	local gene = candidates[math.random(1,#candidates)]
-	gene.enabled = not gene.enabled
-end
 
-function mutate(genome)
-	for mutation,rate in pairs(genome.mutationRates) do
-		if math.random(1,2) == 1 then
-			genome.mutationRates[mutation] = 0.95*rate
-		else
-			genome.mutationRates[mutation] = 1.05263*rate
-		end
-	end
-
-	if math.random() < genome.mutationRates["connections"] then
-		pointMutate(genome)
-	end
-	
-	local p = genome.mutationRates["link"]
-	while p > 0 do
-		if math.random() < p then
-			linkMutate(genome, false)
-		end
-		p = p - 1
-	end
-
-	p = genome.mutationRates["bias"]
-	while p > 0 do
-		if math.random() < p then
-			linkMutate(genome, true)
-		end
-		p = p - 1
-	end
-	
-	p = genome.mutationRates["node"]
-	while p > 0 do
-		if math.random() < p then
-			nodeMutate(genome)
-		end
-		p = p - 1
-	end
-	
-	p = genome.mutationRates["enable"]
-	while p > 0 do
-		if math.random() < p then
-			enableDisableMutate(genome, true)
-		end
-		p = p - 1
-	end
-
-	p = genome.mutationRates["disable"]
-	while p > 0 do
-		if math.random() < p then
-			enableDisableMutate(genome, false)
-		end
-		p = p - 1
-	end
-end
 
 function disjoint(genes1, genes2)
 	local i1 = {}
