@@ -1,0 +1,51 @@
+.App {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0;
+  min-width: 600px;
+}
+
+html, body {
+  min-width: 600px;
+}
+       
+html {
+  overflow-y: scroll;
+}
+
+body {
+  background: #657fca0a;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+table {
+  width: 600px;
+  border-collapse: collapse;
+}
+
+tr {
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+td, th {
+  padding: 12px;
+  text-align: left;
+}
+
+h1 {
+  all: unset;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+h2 {
+  all: unset;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+span {
+  height: 28px;
+}
